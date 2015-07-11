@@ -33,7 +33,7 @@ Generates:
 
 That outputs:
 
-(TODO: ADD IMAGE)
+![Hello World!](https://raw.githubusercontent.com/haskellcamargo/capybara/master/helloworld.png)
 
 #### Hello World (With manual type definition)
 
@@ -50,13 +50,12 @@ SubModule field Where
   origin: [ x: Int [ 18 .. 180 ], y: Int [ 10 .. 100 ] ] ~ ^FO{x}{y}
   data: [ content: String ] ~ ^FD{content}.
 SubModule font Where default ~ ^ADN9050.
-  
 
 Block hello Where
   label#begin
   field#origin [ 100, 150 ]
   font#default
-  field#data   [ {: Hello World:} ]; /
+  field#data   [ helloText ]; /
   label#end.
 ```
 
