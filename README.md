@@ -1,6 +1,6 @@
 ## Capybara Programming Language
 
-Capybara is a statically typed, metaprogrammable, declarative, dependently typed
+Capybara is a metaprogrammable, declarative, statically and dependently typed
 programming language that compiles to ZPL. Capybara is just a rename of Ink programming language.
 
 ### Examples
