@@ -50,7 +50,6 @@ SubModule field Where
   origin: [ x: Int [ 18 .. 180 ], y: Int [ 10 .. 100 ] ] ~ ^FO{x}{y}
   data: [ content: String ] ~ ^FD{content}.
 SubModule font Where default ~ ^ADN9050.
-  
 
 Block hello Where
   label#begin
