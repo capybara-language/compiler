@@ -27,7 +27,7 @@ Generates:
 ```php
 ^FX Hello world with the standard IO library!
 ^XA
-^FO20,10^ADN100,150^FDHello World^FS
+^FO100,150^ADN90,50^FDHello World^FS
 ^XZ
 ```
 
