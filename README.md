@@ -33,7 +33,7 @@ Generates:
 
 That outputs:
 
-[Hello World!](https://raw.githubusercontent.com/haskellcamargo/capybara/master/helloworld.png)
+![Hello World!](https://raw.githubusercontent.com/haskellcamargo/capybara/master/helloworld.png)
 
 #### Hello World (With manual type definition)
 
