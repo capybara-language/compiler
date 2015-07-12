@@ -2,36 +2,39 @@
 
 namespace CapyLexer
 {
+  use \ReflectionClass;
+
   class TokenList
   {
-    const T_MODULE      = 2;
-    const T_IMPORT      = 3;
-    const T_EXPORT      = 4;
-    const T_BLOCK       = 5;
-    const T_WHERE       = 6;
-    const T_DECLARE     = 7;
-    const T_IS          = 8;
-    const T_SUBMODULE   = 9;
-    const T_HASH        = 10;
-    const T_SEMICOLON   = 11;
-    const T_IDENT       = 12;
-    const T_NEWLINE     = 13;
-    const T_BEGINSTR    = 14;
-    const T_ENDSTR      = 15;
-    const T_TOKEN       = 16;
-    const T_LBRACE      = 17;
-    const T_RBRACE      = 18;
-    const T_INSTRUCTION = 19;
-    const T_COMMA       = 20;
-    const T_DOT         = 21;
-    const T_TYPESIG     = 22;
-    const T_RANGE       = 23;
-    const T_COLON       = 24;
-    const T_LBRACK      = 25;
-    const T_RBRACK      = 26;
-    const T_NUMBER      = 27;
-    const T_YES         = 28;
-    const T_NO          = 29;
+    const T_MODULE      = "T_MODULE";
+    const T_IMPORT      = "T_IMPORT";
+    const T_EXPORT      = "T_EXPORT";
+    const T_BLOCK       = "T_BLOCK";
+    const T_WHERE       = "T_WHERE";
+    const T_DECLARE     = "T_DECLARE";
+    const T_IS          = "T_IS";
+    const T_SUBMODULE   = "T_SUBMODULE";
+    const T_HASH        = "T_HASH";
+    const T_SEMICOLON   = "T_SEMICOLON";
+    const T_IDENT       = "T_IDENT";
+    const T_NEWLINE     = "T_NEWLINE";
+    const T_BEGINSTR    = "T_BEGINSTR";
+    const T_ENDSTR      = "T_ENDSTR";
+    const T_TOKEN       = "T_TOKEN";
+    const T_LBRACE      = "T_LBRACE";
+    const T_RBRACE      = "T_RBRACE";
+    const T_INSTRUCTION = "T_INSTRUCTION";
+    const T_COMMA       = "T_COMMA";
+    const T_DOT         = "T_DOT";
+    const T_TYPESIG     = "T_TYPESIG";
+    const T_RANGE       = "T_RANGE";
+    const T_COLON       = "T_COLON";
+    const T_LBRACK      = "T_LBRACK";
+    const T_RBRACK      = "T_RBRACK";
+    const T_NUMBER      = "T_NUMBER";
+    const T_YES         = "T_YES";
+    const T_NO          = "T_NO";
+    const T_NOTHING     = "T_NOTHING";
 
     static $keywordMap = [
       "Module"    => TokenList::T_MODULE
@@ -44,6 +47,12 @@ namespace CapyLexer
     , "Token"     => TokenList::T_TOKEN
     , "Yes"       => TokenList::T_YES
     , "No"        => TokenList::T_NO
+    , "Nothing"   => TokenList::T_NOTHING
     ];
+
+    public static function getTokenName($tokenValue)
+    {
+      return (new ReflectionClass(__CLASS__))->getConstants()[$tokenValue];
+    }
   }
 }
