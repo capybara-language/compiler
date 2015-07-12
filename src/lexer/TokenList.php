@@ -41,6 +41,7 @@ namespace CapyLexer
     const T_OR          = "T_OR";
     const T_IF          = "T_IF";
     const T_OTHERWISE   = "T_OTHERWISE";
+    const T_ENDIF       = "T_ENDIF";
 
     static $keywordMap = [
       "Module"    => TokenList::T_MODULE
@@ -59,6 +60,7 @@ namespace CapyLexer
     , "Otherwise" => TokenList::T_OTHERWISE
     , "And"       => TokenList::T_AND
     , "Or"        => TokenList::T_OR
+    , "EndIf"     => TokenList::T_ENDIF
     ];
 
     public static function getTokenName($tokenValue)
