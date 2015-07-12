@@ -13,31 +13,32 @@ namespace CapyLexer
     {
       while ($this->char != self::EOF) {
         switch ($this->char) {
-          case ".":
-            $this->consume();
-            return new Token(TokenList::T_DOT);
           case " ":
             $this->solveWhitespace();
             continue;
-          case PHP_EOL:
-            $this->solveNewline();
+          case ".":
+            $this->consume();
+            return new Token(TokenList::T_DOT);
           case "{":
             return $this->solveLeftBrace();
           default:
+
             if (Assertion::assertAlpha($this->char)) {
-              return $this->solveIdentifier();
+              return $this->solveIdent();
             }
 
-            throw new \Exception("Token nao reconhecido: " . $this->char);
+            if (Assertion::assertNewline($this->char)) {
+              return $this->solveNewline();
+            }
+
+            throw new \Exception("Invalid: " . $this->char);
         }
       }
       return new Token(Lexer::T_EOF);
     }
 
-    public function solveIdentifier()
+    private function solveIdent()
     {
-      echo "Resolvendo identificador", PHP_EOL;
-
       $buffer = "";
       while (Assertion::assertAlphaNum($this->char)
         || Assertion::assertUnderscore($this->char)) {
@@ -51,30 +52,66 @@ namespace CapyLexer
       return new Token(TokenList::T_IDENT, $buffer);
     }
 
-    public function solveWhitespace()
+    private function solveWhitespace()
     {
-      while ($this->char === " ") {
+      while (in_array($this->char, [" ", "\t"])) {
         $this->consume();
       }
     }
 
-    public function solveNewline()
+    private function solveNewline()
     {
-      $CRLF = ["\r", "\n", "\r\n"];
-      while (in_array($this->char, $CRLF)) {
+      while (Assertion::assertNewline($this->char)) {
         $this->consume();
       }
       return new Token(TokenList::T_NEWLINE);
     }
 
-    public function solveLeftBrace()
+    private function solveLeftBrace()
     {
       if ($this->matchNext("{:")) {
-        $this->consume(2);
-        return new Token(TokenList::T_BEGINSTR);
+        return $this->parseString();
       }
-      $this->consume();
+
+      if ($this->matchNext("{?")) {
+        return $this->parseToken();
+      }
+
       return new Token(TokenList::T_LBRACE);
+    }
+
+    private function parseString()
+    {
+      $this->consume(2);
+      $string = "";
+
+      while (!$this->matchNext(":}")) {
+        $string .= $this->char;
+
+        $this->consume();
+        if ($this->char === parent::EOF) {
+          throw new \Exception("Unterminated string");
+        }
+      }
+      $this->consume(2);
+      return new Token(TokenList::T_STRING, $string);
+    }
+
+    private function parseToken()
+    {
+      $this->consume(2);
+      $token = "";
+
+      while (!$this->matchNext("?}")) {
+        $token .= $this->char;
+
+        $this->consume();
+        if ($this->char === parent::EOF) {
+          throw new \Exception("Unterminated token");
+        }
+      }
+      $this->consume(2);
+      return new Token(TokenList::T_OTHER, str_replace(" ", "", $token));
     }
   }
 }

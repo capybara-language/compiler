@@ -18,5 +18,10 @@ namespace CapyLexer
     {
       return $char === "_";
     }
+
+    static function assertNewline($char)
+    {
+      return $char === "\r\n" || $char === "\r" || $char === "\n";
+    }
   }
 }

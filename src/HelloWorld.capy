@@ -1,6 +1,8 @@
 Module HelloWorld.
+Import 
+Export hello.
 
-Token { / } Is ^FS.
+Token {? / ?} Is ^FS.
 
 Declare
   helloText Is {: Hello World! :}.

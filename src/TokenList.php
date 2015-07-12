@@ -18,8 +18,7 @@ namespace CapyLexer
     const T_SEMICOLON   = "T_SEMICOLON";
     const T_IDENT       = "T_IDENT";
     const T_NEWLINE     = "T_NEWLINE";
-    const T_BEGINSTR    = "T_BEGINSTR";
-    const T_ENDSTR      = "T_ENDSTR";
+    const T_STRING      = "T_STRING";
     const T_TOKEN       = "T_TOKEN";
     const T_LBRACE      = "T_LBRACE";
     const T_RBRACE      = "T_RBRACE";
