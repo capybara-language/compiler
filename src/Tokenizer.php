@@ -4,6 +4,8 @@ namespace CapyLexer
 {
   class Tokenizer extends Lexer
   {
+    public $metaToken = [];
+
     public function __construct($input)
     {
       parent::__construct($input);
@@ -12,6 +14,12 @@ namespace CapyLexer
     public function nextToken()
     {
       while ($this->char != self::EOF) {
+        if (in_array($this->char, $this->metaToken)) {
+          $metachar = $this->char;
+          $this->consume();
+          return new Token(T_META, $metachar);
+        }
+
         switch ($this->char) {
           case " ":
             $this->solveWhitespace();
@@ -151,7 +159,11 @@ namespace CapyLexer
         }
       }
       $this->consume(2);
-      return new Token(TokenList::T_OTHER, str_replace(" ", "", $token));
+
+      $meta = str_replace(" ", "", $token);
+      $this->metaToken[] = $meta;
+
+      return new Token(TokenList::T_METADEF, $meta);
     }
 
     private function solveNumber()
