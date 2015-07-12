@@ -13,34 +13,37 @@ namespace CapyLexer
     {
       while ($this->char != self::EOF) {
         switch ($this->char) {
-          case " ":
-            $this->solveWhitespace();
-            continue;
-          case "\r\n":
-          case "\r":
-          case "\n":
-            return $this->solveNewline();
           case ".":
             $this->consume();
             return new Token(TokenList::T_DOT);
+          case " ":
+            $this->solveWhitespace();
+            continue;
+          case PHP_EOL:
+            $this->solveNewline();
+          case "{":
+            return $this->solveLeftBrace();
           default:
             if (Assertion::assertAlpha($this->char)) {
               return $this->solveIdentifier();
             }
-            throw new \Exception("Unexpected {$this->char}", 1);
+
+            throw new \Exception("Token nao reconhecido: " . $this->char);
         }
       }
+      return new Token(Lexer::T_EOF);
     }
 
     public function solveIdentifier()
     {
-      $stack = [];
+      echo "Resolvendo identificador", PHP_EOL;
+
+      $buffer = "";
       while (Assertion::assertAlphaNum($this->char)
         || Assertion::assertUnderscore($this->char)) {
-        $stack[] = $this->char;
+        $buffer .= $this->char;
         $this->consume();
       }
-      $buffer = implode("", $stack);
 
       if (array_key_exists($buffer, TokenList::$keywordMap)) {
         return new Token(TokenList::$keywordMap[$buffer]);
@@ -57,7 +60,21 @@ namespace CapyLexer
 
     public function solveNewline()
     {
-      
+      $CRLF = ["\r", "\n", "\r\n"];
+      while (in_array($this->char, $CRLF)) {
+        $this->consume();
+      }
+      return new Token(TokenList::T_NEWLINE);
+    }
+
+    public function solveLeftBrace()
+    {
+      if ($this->matchNext("{:")) {
+        $this->consume(2);
+        return new Token(TokenList::T_BEGINSTR);
+      }
+      $this->consume();
+      return new Token(TokenList::T_LBRACE);
     }
   }
 }

@@ -15,7 +15,7 @@ namespace CapyLexer
     $lexer = new Tokenizer($source);
     $token = $lexer->nextToken();
 
-    while ($token->getKey != Lexer::T_EOF) {
+    while ($token->getKey() != Lexer::T_EOF) {
       echo $token;
       $token = $lexer->nextToken();
     }

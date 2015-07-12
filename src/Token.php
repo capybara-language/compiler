@@ -26,7 +26,7 @@ namespace CapyLexer
     {
       return "[" . TokenList::getTokenName($this->key)
         . (isset($this->value) ? ", \"{$this->value}\"" : "")
-        . "]";
+        . "]\n";
     }
   }
 }
