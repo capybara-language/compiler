@@ -27,7 +27,7 @@ namespace TestLexer
 
     public function testLength()
     {
-      $this->assertEquals(155, sizeof($this->tokenStack));
+      $this->assertEquals(154, sizeof($this->tokenStack));
     }
 
     public function testTokenOutput()
