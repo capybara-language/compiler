@@ -19,7 +19,7 @@ namespace CapyLexer
         if (in_array($this->char, $this->metaToken)) {
           $metachar = $this->char;
           $this->consume();
-          return new Token(T_META, $metachar, $local);
+          return new Token(TokenList::T_META, $metachar, $local);
         }
 
         switch ($this->char) {
