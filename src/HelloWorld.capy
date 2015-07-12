@@ -1,5 +1,5 @@
 Module HelloWorld.
-Import 
+Import StdPrint { label }.
 Export hello.
 
 Token {? / ?} Is ^FS.

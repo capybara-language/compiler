@@ -6,10 +6,20 @@ namespace CapyLexer
   {
     private $key;
     private $value;
+    private $local = [
+      "line"   => "??"
+    , "column" => "??"
+    ];
 
-    public function __construct($key, $value = null)
+    public function __construct($key, $value = null, $local = null)
     {
-      list ($this->key, $this->value) = [$key, $value];
+      $this->key = $key;
+      if (is_array($value)) {
+        $this->local = $value ?: $this->local;
+      } else {
+        $this->value = $value;
+        $this->local = $local ?: $this->local;
+      }
     }
 
     public function getKey()
@@ -26,7 +36,7 @@ namespace CapyLexer
     {
       return "[" . TokenList::getTokenName($this->key)
         . (isset($this->value) ? ", \"{$this->value}\"" : "")
-        . "]\n";
+        . ", " . $this->local['line'] . ", " . $this->local['column'] . "]\n";
     }
   }
 }

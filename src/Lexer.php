@@ -10,6 +10,10 @@ namespace CapyLexer
     protected $input;
     protected $position = 0;
     protected $char;
+    protected $local = [
+      "line"   => 1
+    , "column" => 1
+    ];
 
     public function __construct($input)
     {
@@ -35,6 +39,7 @@ namespace CapyLexer
     public function consume($next = 1)
     {
       $this->position += $next;
+      $this->local["column"] += $next;
       if ($this->position >= strlen($this->input)) {
         $this->char = self::EOF;
       } else {

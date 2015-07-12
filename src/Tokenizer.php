@@ -16,8 +16,9 @@ namespace CapyLexer
       while ($this->char != self::EOF) {
         if (in_array($this->char, $this->metaToken)) {
           $metachar = $this->char;
+          $local = $this->local;
           $this->consume();
-          return new Token(T_META, $metachar);
+          return new Token(T_META, $metachar, $local);
         }
 
         switch ($this->char) {
@@ -28,30 +29,31 @@ namespace CapyLexer
             return $this->solveDot();
           case "{":
             return $this->solveLeftBrace();
+          case "}":
+            return $this->solveRightBrace();
           case "^":
-            $this->consume();
-            return new Token(TokenList::T_INSTRUCTION);
+            return $this->solveInstruction();
           case "~":
             $this->consume();
-            return new Token(TokenList::T_TRANSLATES);
+            return new Token(TokenList::T_TRANSLATES, $this->local);
           case ",":
             $this->consume();
-            return new Token(TokenList::T_COMMA);
+            return new Token(TokenList::T_COMMA, $this->local);
           case ":":
             $this->consume();
-            return new Token(TokenList::T_TYPESIG);
+            return new Token(TokenList::T_TYPESIG, $this->local);
           case "[":
             $this->consume();
-            return new Token(TokenList::T_LBRACK);
+            return new Token(TokenList::T_LBRACK, $this->local);
           case "]":
             $this->consume();
-            return new Token(TokenList::T_RBRACK);
+            return new Token(TokenList::T_RBRACK, $this->local);
           case "#":
             $this->consume();
-            return new Token(TokenList::T_HASH);
+            return new Token(TokenList::T_HASH, $this->local);
           case ";":
             $this->consume();
-            return new Token(TokenList::T_SEMICOLON);
+            return new Token(TokenList::T_SEMICOLON, $this->local);
           default:
 
             if (Assertion::assertAlpha($this->char)) {
@@ -69,12 +71,13 @@ namespace CapyLexer
             throw new \Exception("Invalid: " . $this->char);
         }
       }
-      return new Token(Lexer::T_EOF);
+      return new Token(Lexer::T_EOF, $this->local);
     }
 
     private function solveIdent()
     {
       $buffer = "";
+      $local = $this->local;
       while (Assertion::assertAlphaNum($this->char)
         || Assertion::assertUnderscore($this->char)) {
         $buffer .= $this->char;
@@ -82,9 +85,9 @@ namespace CapyLexer
       }
 
       if (array_key_exists($buffer, TokenList::$keywordMap)) {
-        return new Token(TokenList::$keywordMap[$buffer]);
+        return new Token(TokenList::$keywordMap[$buffer], $local);
       }
-      return new Token(TokenList::T_IDENT, $buffer);
+      return new Token(TokenList::T_IDENT, $buffer, $local);
     }
 
     private function solveWhitespace()
@@ -96,14 +99,18 @@ namespace CapyLexer
 
     private function solveNewline()
     {
+      $local = $this->local;
       while (Assertion::assertNewline($this->char)) {
         $this->consume();
+        $this->local["line"]++;
+        $this->local["column"] = 1;
       }
-      return new Token(TokenList::T_NEWLINE);
+      return new Token(TokenList::T_NEWLINE, $local);
     }
 
     private function solveLeftBrace()
     {
+      $local = $this->local;
       if ($this->matchNext("{:")) {
         return $this->parseString();
       }
@@ -121,15 +128,23 @@ namespace CapyLexer
         }
         $this->consume();
         return new Token(TokenList::T_PLACEHOLDER,
-          $placeholder->getValue());
+          $placeholder->getValue(), $local);
       }
 
       $this->consume();
-      return new Token(TokenList::T_LBRACE);
+      return new Token(TokenList::T_LBRACE, $local);
+    }
+
+    private function solveRightBrace()
+    {
+      $local = $this->local;
+      $this->consume();
+      return new Token(TokenList::T_RBRACE, $local);
     }
 
     private function parseString()
     {
+      $local = $this->local;
       $this->consume(2);
       $string = "";
 
@@ -142,13 +157,15 @@ namespace CapyLexer
         }
       }
       $this->consume(2);
-      return new Token(TokenList::T_STRING, $string);
+      return new Token(TokenList::T_STRING, $string, $local);
     }
 
     private function parseToken()
     {
       $this->consume(2);
       $token = "";
+      $local = $this->local;
+      $rWhitespace = 0;
 
       while (!$this->matchNext("?}")) {
         $token .= $this->char;
@@ -161,29 +178,48 @@ namespace CapyLexer
       $this->consume(2);
 
       $meta = str_replace(" ", "", $token);
-      $this->metaToken[] = $meta;
 
-      return new Token(TokenList::T_METADEF, $meta);
+      for ($i = 0, $l = strlen($token); $i < $l; $i++) {
+        if ($token[$i] === " ") {
+          $rWhitespace++;
+        } else {
+          break;
+        }
+      }
+
+      $this->metaToken[] = $meta;
+      $local["column"] += $rWhitespace;
+
+      return new Token(TokenList::T_METADEF, $meta, $local);
     }
 
     private function solveNumber()
     {
       $buffer = "";
+      $local = $this->local;
       while (Assertion::assertNum($this->char)) {
         $buffer .= $this->char;
         $this->consume();
       }
-      return new Token(TokenList::T_NUMBER, $buffer);
+      return new Token(TokenList::T_NUMBER, $buffer, $local);
     }
 
     private function solveDot()
     {
+      $local = $this->local;
       if ($this->next() === ".") {
         $this->consume(2);
-        return new Token(TokenList::T_RANGE);
+        return new Token(TokenList::T_RANGE, $local);
       }
       $this->consume();
-      return new Token(TokenList::T_DOT);
+      return new Token(TokenList::T_DOT, $local);
+    }
+
+    private function solveInstruction()
+    {
+      $local = $this->local;
+      $this->consume();
+      return new Token(TokenList::T_INSTRUCTION, $local);
     }
   }
 }
