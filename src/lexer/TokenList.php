@@ -27,7 +27,6 @@ namespace CapyLexer
     const T_DOT         = "T_DOT";
     const T_TYPESIG     = "T_TYPESIG";
     const T_RANGE       = "T_RANGE";
-    const T_COLON       = "T_COLON";
     const T_LBRACK      = "T_LBRACK";
     const T_RBRACK      = "T_RBRACK";
     const T_NUMBER      = "T_NUMBER";
@@ -38,6 +37,10 @@ namespace CapyLexer
     const T_TRANSLATES  = "T_TRANSLATES";
     const T_PLACEHOLDER = "T_PLACEHOLDER";
     const T_METADEF     = "T_METADEF";
+    const T_AND         = "T_AND";
+    const T_OR          = "T_OR";
+    const T_IF          = "T_IF";
+    const T_OTHERWISE   = "T_OTHERWISE";
 
     static $keywordMap = [
       "Module"    => TokenList::T_MODULE
@@ -52,6 +55,10 @@ namespace CapyLexer
     , "No"        => TokenList::T_NO
     , "Nothing"   => TokenList::T_NOTHING
     , "Declare"   => TokenList::T_DECLARE
+    , "If"        => TokenList::T_IF
+    , "Otherwise" => TokenList::T_OTHERWISE
+    , "And"       => TokenList::T_AND
+    , "Or"        => TokenList::T_OR
     ];
 
     public static function getTokenName($tokenValue)
