@@ -14,9 +14,10 @@ namespace CapyLexer
     public function nextToken()
     {
       while ($this->char != self::EOF) {
+        $local = $this->local;
+
         if (in_array($this->char, $this->metaToken)) {
           $metachar = $this->char;
-          $local = $this->local;
           $this->consume();
           return new Token(T_META, $metachar, $local);
         }
@@ -35,25 +36,25 @@ namespace CapyLexer
             return $this->solveInstruction();
           case "~":
             $this->consume();
-            return new Token(TokenList::T_TRANSLATES, $this->local);
+            return new Token(TokenList::T_TRANSLATES, $local);
           case ",":
             $this->consume();
-            return new Token(TokenList::T_COMMA, $this->local);
+            return new Token(TokenList::T_COMMA, $local);
           case ":":
             $this->consume();
-            return new Token(TokenList::T_TYPESIG, $this->local);
+            return new Token(TokenList::T_TYPESIG, $local);
           case "[":
             $this->consume();
-            return new Token(TokenList::T_LBRACK, $this->local);
+            return new Token(TokenList::T_LBRACK, $local);
           case "]":
             $this->consume();
-            return new Token(TokenList::T_RBRACK, $this->local);
+            return new Token(TokenList::T_RBRACK, $local);
           case "#":
             $this->consume();
-            return new Token(TokenList::T_HASH, $this->local);
+            return new Token(TokenList::T_HASH, $local);
           case ";":
             $this->consume();
-            return new Token(TokenList::T_SEMICOLON, $this->local);
+            return new Token(TokenList::T_SEMICOLON, $local);
           default:
 
             if (Assertion::assertAlpha($this->char)) {
