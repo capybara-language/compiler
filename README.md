@@ -1,5 +1,7 @@
 ## Capybara Programming Language
 
+[![Build Status](https://travis-ci.org/haskellcamargo/capybara.svg?branch=master)](https://travis-ci.org/haskellcamargo/capybara)
+
 Capybara is a metaprogrammable, declarative, statically and dependently typed
 programming language that compiles to ZPL. Capybara is just a rename of Ink programming language.
 
