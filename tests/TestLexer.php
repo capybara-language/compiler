@@ -14,7 +14,7 @@ namespace TestLexer
 
     public function __construct()
     {
-      $source = file_get_contents("./examples/HelloWorld.capy");
+      $source = file_get_contents("./examples/Generic.capy");
 
       $lexer = new \CapyLexer\Tokenizer($source);
       $token = $lexer->nextToken();
