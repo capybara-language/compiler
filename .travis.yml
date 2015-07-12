@@ -4,3 +4,5 @@ php:
   - 5.5
   - 5.6
   - 7.0
+
+script: phpunit ./tests/TestLexer.php
