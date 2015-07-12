@@ -35,6 +35,8 @@ namespace CapyLexer
     const T_NO          = "T_NO";
     const T_NOTHING     = "T_NOTHING";
     const T_OTHER       = "T_OTHER";
+    const T_TRANSLATES  = "T_TRANSLATES";
+    const T_PLACEHOLDER = "T_PLACEHOLDER";
 
     static $keywordMap = [
       "Module"    => TokenList::T_MODULE
@@ -48,6 +50,7 @@ namespace CapyLexer
     , "Yes"       => TokenList::T_YES
     , "No"        => TokenList::T_NO
     , "Nothing"   => TokenList::T_NOTHING
+    , "Declare"   => TokenList::T_DECLARE
     ];
 
     public static function getTokenName($tokenValue)

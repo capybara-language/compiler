@@ -23,5 +23,10 @@ namespace CapyLexer
     {
       return $char === "\r\n" || $char === "\r" || $char === "\n";
     }
+
+    static function assertNum($char)
+    {
+      return ctype_digit($char);
+    }
   }
 }

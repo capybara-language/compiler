@@ -17,14 +17,41 @@ namespace CapyLexer
             $this->solveWhitespace();
             continue;
           case ".":
-            $this->consume();
-            return new Token(TokenList::T_DOT);
+            return $this->solveDot();
           case "{":
             return $this->solveLeftBrace();
+          case "^":
+            $this->consume();
+            return new Token(TokenList::T_INSTRUCTION);
+          case "~":
+            $this->consume();
+            return new Token(TokenList::T_TRANSLATES);
+          case ",":
+            $this->consume();
+            return new Token(TokenList::T_COMMA);
+          case ":":
+            $this->consume();
+            return new Token(TokenList::T_TYPESIG);
+          case "[":
+            $this->consume();
+            return new Token(TokenList::T_LBRACK);
+          case "]":
+            $this->consume();
+            return new Token(TokenList::T_RBRACK);
+          case "#":
+            $this->consume();
+            return new Token(TokenList::T_HASH);
+          case ";":
+            $this->consume();
+            return new Token(TokenList::T_SEMICOLON);
           default:
 
             if (Assertion::assertAlpha($this->char)) {
               return $this->solveIdent();
+            }
+
+            if (Assertion::assertNum($this->char)) {
+              return $this->solveNumber();
             }
 
             if (Assertion::assertNewline($this->char)) {
@@ -77,6 +104,19 @@ namespace CapyLexer
         return $this->parseToken();
       }
 
+      if (Assertion::assertAlpha($this->next())) {
+        $this->consume();
+
+        $placeholder = $this->solveIdent();
+        if ($this->char !== "}") {
+          throw new \Exception("Unterminated placeholder");
+        }
+        $this->consume();
+        return new Token(TokenList::T_PLACEHOLDER,
+          $placeholder->getValue());
+      }
+
+      $this->consume();
       return new Token(TokenList::T_LBRACE);
     }
 
@@ -112,6 +152,26 @@ namespace CapyLexer
       }
       $this->consume(2);
       return new Token(TokenList::T_OTHER, str_replace(" ", "", $token));
+    }
+
+    private function solveNumber()
+    {
+      $buffer = "";
+      while (Assertion::assertNum($this->char)) {
+        $buffer .= $this->char;
+        $this->consume();
+      }
+      return new Token(TokenList::T_NUMBER, $buffer);
+    }
+
+    private function solveDot()
+    {
+      if ($this->next() === ".") {
+        $this->consume(2);
+        return new Token(TokenList::T_RANGE);
+      }
+      $this->consume();
+      return new Token(TokenList::T_DOT);
     }
   }
 }
