@@ -33,7 +33,7 @@ namespace TestLexer
     public function testTokenOutput()
     {
       $this->expectf = explode("\n",
-        file_get_contents("./tests/lexer_expect.phpt"));
+        file_get_contents("./tests/lexer_expect.ml"));
       array_pop($this->expectf);
 
       $i = 0;
