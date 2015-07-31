@@ -22,6 +22,17 @@
         return Persistent.declarations[key].mutable ===  true;
       }
     },
+    importation: {
+      insert: function(module, useSubmodules, submodules) {
+        Persistent.imports[module] = {
+          useSubmodules: useSubmodules,
+          submodules: submodules
+        };
+      },
+      isImported: function(module) {
+        return module.name in Persistent.imports;
+      }
+    },
     type: {
       toInteger: function(digits) {
         return parseInt(digits.join(""));
@@ -57,7 +68,8 @@
 
   var Persistent = {
     moduleName: undefined,
-    declarations: {}
+    declarations: {},
+    imports: {},
   };
 }
 
@@ -82,6 +94,7 @@ Body
 Stmt "statement"
   = ModuleStmt
   / DeclareStmt
+  / ImportStmt
 
 /* Statements */
 ModuleStmt
@@ -105,6 +118,62 @@ DeclareStmt
       type: "DeclareStmt",
       declarations: [x].concat(xs)
     };
+  }
+
+ImportStmt
+  = ImportToken _ list:ImportList _ StmtTerminator {
+    return {
+      type: "ImportStmt",
+      imports: list
+    };
+  }
+
+ImportList
+  = x:ImportBody xs:ImportRest* {
+    return [x].concat(xs);
+  }
+
+ImportRest
+  = Appender x:ImportBody {
+    return x;
+  }
+
+ImportBody
+  = module:Ident submodules:ImportSubList? {
+    var hasSubmodules = !!submodules;
+
+    if (Capybara.importation.isImported(module)) {
+      throw new SyntaxError("Module already imported: \"" + module.name + "\"");
+    }
+
+    Capybara.importation.insert(module.name, hasSubmodules, submodules);
+
+    return {
+      type: "Importation",
+      module: module,
+      submodular: hasSubmodules,
+      submodules: submodules
+    };
+  }
+
+ImportSubList
+  = _ "{" _ x:SubModuleValidName? xs:SubModuleValidNameRest* _ "}" {
+    return x
+      ? [x].concat(xs).map(function(m) { return m.name })
+      : [];
+  }
+
+SubModuleValidName
+  = Ident
+  / matches:[\!\@\?\#\%\&\*\+\-\^\~\/\<\>\$\'\"]+ {
+    return {
+      name: matches.join("")
+    };
+  }
+
+SubModuleValidNameRest
+  = Appender x:SubModuleValidName {
+    return x;
   }
 
 DeclareBody
@@ -182,7 +251,8 @@ CapybaraBool
   }
 
 Appender
-  = _ ("," / NewLine* ) _
+  = (WhiteSpace* NewLine+ WhiteSpace*)
+  / (_ "," _)
 
 /* Tokens */
 KeyWord "reserved word"
@@ -192,6 +262,7 @@ KeyWord "reserved word"
   / YesToken
   / NoToken
   / MutableToken
+  / ImportToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -210,6 +281,9 @@ NoToken
 
 MutableToken
   = "Mutable" !IdentRest
+
+ImportToken
+  = "Import" !IdentRest
 
 /* Identifier */
 Ident "identifier"
