@@ -1,7 +1,6 @@
 {
   /**
    * Capybara compiler
-   * Abstract Syntax Tree generator
    * Copyright 2015 - Marcelo Camargo <marcelocamargo@linuxmail.org>
    * Licensed under GNU GPL v3.
    */
@@ -24,6 +23,9 @@
       },
       opt: function(value) {
         return value !== null ? value : [];
+      },
+      stringify: function(x, xs) {
+        return [x].concat(xs).join("");
       }
     }
   }
@@ -48,19 +50,46 @@ Body
   }
 
 Stmt
-  = "1"
+  = Ident
+
+/* Tokens */
+KeyWord
+  = ModuleToken
+
+ModuleToken
+  = "Module"
+
+/* Identifier */
+Ident
+  = !KeyWord name:IdentName _ {
+    return name;
+  }
+
+IdentName "identifier"
+  = x:IdentStart xs:IdentRest* {
+    return {
+      type: "Ident",
+      name: Capybara.list.stringify(x, xs)
+    };
+  }
+
+IdentStart
+  = [a-z_]i
+
+IdentRest
+  = [a-z0-9_]i
 
 /* Skipped */
 _
   = (WhiteSpace / NewLine)*
 
-WhiteSpace
+WhiteSpace "whitespace"
   = "\t"
   / "\v"
   / "\f"
   / " "
 
-NewLine
+NewLine "newline"
   = "\n"
   / "\r\n"
   / "\r"
