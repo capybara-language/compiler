@@ -5,6 +5,25 @@
    * Licensed under GNU GPL v3.
    */
   var Capybara = {
+    declaration: {
+      declare: function(key, value) {
+        Persistent.declarations[key] = value;
+      },
+      undeclare: function(key) {
+        delete Persistent.declarations[key];
+      },
+      exists: function(key) {
+        return key in Persistent.declarations;
+      }
+    },
+    type: {
+      toInteger: function(digits) {
+        return parseInt(digits.join(""));
+      },
+      toString: function(chars) {
+        return chars.join("").toString();
+      }
+    },
     list: {
       build: function(x, xs, n) {
         return [x].concat(Capybara.list.take(xs, n));
@@ -31,7 +50,8 @@
   };
 
   var Persistent = {
-    moduleName: undefined
+    moduleName: undefined,
+    declarations: {}
   };
 }
 
@@ -55,6 +75,7 @@ Body
 
 Stmt "statement"
   = ModuleStmt
+  / DeclareStmt
 
 /* Statements */
 ModuleStmt
@@ -72,15 +93,90 @@ ModuleStmt
     }
   }
 
+DeclareStmt
+  = DeclareToken _ variable:Ident _ AsToken _ expr:Expr _ StmtTerminator {
+
+    if (Capybara.declaration.exists(variable.name)) {
+      throw new SyntaxError("Cannot redefine \"" + variable.name + "\"");
+    }
+
+    Capybara.declaration.declare(variable.name, true);
+
+    return {
+      type: "DeclareStmt",
+      key: variable.name,
+      value: expr
+    };
+  }
+
 StmtTerminator "statement terminator ([.] or [;])"
   = ("." / ";") _
+
+/* Expressions */
+Expr "expression"
+  = Literal
+
+Literal
+  = CapybaraString
+  / CapybaraInteger
+  / CapybaraBool
+
+CapybaraString
+  = "{:" str:ValidStringChar* ":}" {
+    return {
+      type: "Literal",
+      kind: "String",
+      value: Capybara.type.toString(str)
+    };
+  }
+
+CapybaraInteger
+  = i:[0-9]+ {
+    return {
+      type: "Literal",
+      kind: "Integer",
+      value: parseInt(i.join(""))
+    };
+  }
+
+CapybaraBool
+  = YesToken {
+    return {
+      type: "Literal",
+      kind: "Bool",
+      value: true
+    };
+  }
+  / NoToken {
+    return {
+      type: "Literal",
+      kind: "Bool",
+      value: false
+    };
+  }
 
 /* Tokens */
 KeyWord "reserved word"
   = ModuleToken
+  / DeclareToken
+  / AsToken
+  / YesToken
+  / NoToken
 
 ModuleToken
   = "Module" !IdentRest
+
+DeclareToken
+  = "Declare" !IdentRest
+
+AsToken
+  = "As" !IdentRest
+
+YesToken
+  = "Yes" !IdentRest
+
+NoToken
+  = "No" !IdentRest
 
 /* Identifier */
 Ident "identifier"
@@ -101,6 +197,9 @@ IdentStart
 
 IdentRest
   = [a-z0-9_]i
+
+ValidStringChar
+  = [a-z_0-9_\-\/\^\~\!\@\#\$\%\&\*\(\)\+\{\}\?\,\.\<\>\t\s ]i
 
 /* Skipped */
 _
