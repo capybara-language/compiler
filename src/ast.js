@@ -95,6 +95,9 @@ Stmt "statement"
   = ModuleStmt
   / DeclareStmt
   / ImportStmt
+  / DumpStmt
+  / Comment
+  / DocComment
 
 /* Statements */
 ModuleStmt
@@ -127,6 +130,53 @@ ImportStmt
       imports: list
     };
   }
+
+DumpStmt
+  = DumpToken _ x:Ident xs:IdentAppender* _ StmtTerminator {
+    var dumpStack = [x].concat(xs).map(function(d) {
+      return d.name;
+    });
+
+    for (var i = 0, len = dumpStack.length; i < len; i++) {
+      if (Capybara.declaration.exists(dumpStack[i])) {
+        Capybara.declaration.undeclare(dumpStack[i]);
+      } else {
+        throw new SyntaxError("Cannot undeclare a non-declared value: " +
+          "\"" + dumpStack[i] + "\"");
+      }
+    }
+
+    return {
+      type: "DumpStmt",
+      declarations: dumpStack
+    };
+  }
+
+IdentAppender
+  = Appender x:Ident {
+    return x;
+  }
+
+Comment "comment"
+  = "%" source:ValidCommentChar* {
+    return {
+      type: "Comment",
+      text: Capybara.type.toString(source)
+    };
+  }
+
+DocComment "documentation comment"
+  = "(*" source:ValidDocCommentChar* ("*)" / EOF) {
+    return {
+      type: "DocComment",
+      text: Capybara.type.toString(source)
+    };
+  }
+
+ValidDocCommentChar
+  = !"*)" chr:. {
+  return chr;
+}
 
 ImportList
   = x:ImportBody xs:ImportRest* {
@@ -251,8 +301,7 @@ CapybaraBool
   }
 
 Appender
-  = (WhiteSpace* NewLine+ WhiteSpace*)
-  / (_ "," _)
+  = _ "," _
 
 /* Tokens */
 KeyWord "reserved word"
@@ -263,6 +312,7 @@ KeyWord "reserved word"
   / NoToken
   / MutableToken
   / ImportToken
+  / DumpToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -284,6 +334,9 @@ MutableToken
 
 ImportToken
   = "Import" !IdentRest
+
+DumpToken
+  = "Dump" !IdentRest
 
 /* Identifier */
 Ident "identifier"
@@ -308,6 +361,11 @@ IdentRest
 ValidStringChar
   = [a-z_0-9_\-\/\^\~\!\@\#\$\%\&\*\(\)\+\{\}\?\,\.\<\>\t\s ]i
 
+ValidCommentChar
+  = all:(.)!NewLine {
+    return all;
+  }
+
 /* Skipped */
 _
   = (WhiteSpace / NewLine)*
@@ -324,3 +382,6 @@ NewLine "newline"
   / "\r"
   / "\u2028"
   / "\u2029"
+
+EOF
+  = !.
