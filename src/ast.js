@@ -94,19 +94,25 @@ ModuleStmt
   }
 
 DeclareStmt
-  = DeclareToken _ variable:Ident _ AsToken _ expr:Expr _ StmtTerminator {
-
-    if (Capybara.declaration.exists(variable.name)) {
-      throw new SyntaxError("Cannot redefine \"" + variable.name + "\"");
-    }
-
-    Capybara.declaration.declare(variable.name, true);
-
+  = DeclareToken _ x:DeclareBody xs:DeclareRest* _ StmtTerminator {
     return {
       type: "DeclareStmt",
+      declarations: [x].concat(xs)
+    };
+  }
+
+DeclareBody
+  = variable:Ident _ AsToken _ expr:Expr {
+    return {
+      type: "Declaration",
       key: variable.name,
       value: expr
     };
+  }
+
+DeclareRest
+  = Appender x:DeclareBody {
+    return x;
   }
 
 StmtTerminator "statement terminator ([.] or [;])"
@@ -154,6 +160,9 @@ CapybaraBool
       value: false
     };
   }
+
+Appender
+  = _ ("," / NewLine* ) _
 
 /* Tokens */
 KeyWord "reserved word"
