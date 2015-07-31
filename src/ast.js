@@ -6,14 +6,20 @@
    */
   var Capybara = {
     declaration: {
-      declare: function(key, value) {
-        Persistent.declarations[key] = value;
+      declare: function(key, value, mutable) {
+        Persistent.declarations[key] = {
+          value: value,
+          mutable: mutable
+        };
       },
       undeclare: function(key) {
         delete Persistent.declarations[key];
       },
       exists: function(key) {
         return key in Persistent.declarations;
+      },
+      isMutable: function(key) {
+        return Persistent.declarations[key].mutable ===  true;
       }
     },
     type: {
@@ -102,11 +108,25 @@ DeclareStmt
   }
 
 DeclareBody
-  = variable:Ident _ AsToken _ expr:Expr {
+  = mut:(MutableToken _)? variable:Ident _ AsToken _ expr:Expr {
+    var isMutable = !!mut;
+
+    if (Capybara.declaration.exists(variable.name)) {
+      if (Capybara.declaration.isMutable(variable.name)) {
+        Capybara.declaration.declare(variable.name, expr, true);
+      } else {
+        throw new SyntaxError("Declaration \"" + variable.name + "\" is " +
+        "immutable");
+      }
+    } else {
+      Capybara.declaration.declare(variable.name, expr, isMutable);
+    }
+
     return {
       type: "Declaration",
       key: variable.name,
-      value: expr
+      value: expr,
+      mutable: isMutable
     };
   }
 
@@ -171,6 +191,7 @@ KeyWord "reserved word"
   / AsToken
   / YesToken
   / NoToken
+  / MutableToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -186,6 +207,9 @@ YesToken
 
 NoToken
   = "No" !IdentRest
+
+MutableToken
+  = "Mutable" !IdentRest
 
 /* Identifier */
 Ident "identifier"
