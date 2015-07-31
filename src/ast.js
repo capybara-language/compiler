@@ -28,7 +28,11 @@
         return [x].concat(xs).join("");
       }
     }
-  }
+  };
+
+  var Persistent = {
+    moduleName: undefined
+  };
 }
 
 Start
@@ -49,23 +53,43 @@ Body
     return Capybara.list.build(x, xs, 1);
   }
 
-Stmt
-  = Ident
+Stmt "statement"
+  = ModuleStmt
+
+/* Statements */
+ModuleStmt
+  = ModuleToken _ name:Ident _ StmtTerminator {
+    if (!Persistent.moduleName) {
+      Persistent.moduleName = name.name;
+    } else {
+      throw new SyntaxError("Module is immutable and cannot be redefined to " +
+      "\"" + name.name + "\".");
+    }
+
+    return {
+      type: "ModuleStmt",
+      name: name.name
+    }
+  }
+
+StmtTerminator "statement terminator ([.] or [;])"
+  = "."
+  / ";"
 
 /* Tokens */
-KeyWord
+KeyWord "reserved word"
   = ModuleToken
 
 ModuleToken
-  = "Module"
+  = "Module" !IdentRest
 
 /* Identifier */
-Ident
+Ident "identifier"
   = !KeyWord name:IdentName _ {
     return name;
   }
 
-IdentName "identifier"
+IdentName
   = x:IdentStart xs:IdentRest* {
     return {
       type: "Ident",
