@@ -73,8 +73,7 @@ ModuleStmt
   }
 
 StmtTerminator "statement terminator ([.] or [;])"
-  = "."
-  / ";"
+  = ("." / ";") _
 
 /* Tokens */
 KeyWord "reserved word"
