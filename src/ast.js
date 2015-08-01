@@ -112,6 +112,7 @@ Stmt "statement"
   / ImportStmt
   / DumpStmt
   / ExportStmt
+  / SubModuleStmt
   / Comment
   / DocComment
 
@@ -175,6 +176,55 @@ ExportStmt
       blocks: [x].concat(xs).map(function(m) { return m.name })
     };
   }
+
+SubModuleStmt
+  = SubModuleToken _ name:Ident _ x:SubModuleDecl xs:SubModuleDeclRest* _ StmtTerminator {
+    return {
+      type: "SubModuleStmt",
+      name: name.name,
+      declarations: [x].concat(xs)
+    };
+  }
+
+SubModuleDecl
+  = name:Ident translation:TranslatesTo {
+    return {
+      using: name.name,
+      translation: translation
+    };
+  }
+
+SubModuleDeclRest
+  = Appender x:SubModuleDecl {
+    return x;
+  }
+
+TranslatesTo
+  = _ "+>" _ instruction:ZPLInstruction {
+    return {
+      type: "TranslatesDecl",
+      instruction: instruction
+    };
+  }
+
+/* ZPL bindings */
+
+ZPLInstruction
+  = signal:("~" / "^") x:ZPLValidStart xs:ZPLValidRest  {
+    return {
+      type: "ZPLInstruction",
+      signal: signal,
+      instruction: [x].concat(xs).join("")
+    };
+  }
+
+ZPLValidStart
+  = [a-zA-Z]
+
+ZPLValidRest
+  = [a-zA-Z0-9_]*
+
+// TODO: Allow placeholders in ZPL declarations: ^AD{B}{X}{Y}.
 
 IdentAppender
   = Appender x:Ident {
@@ -394,6 +444,7 @@ KeyWord "reserved word"
   / TypeIntegerToken
   / TypeBoolToken
   / TypeAnyToken
+  / SubModuleToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -434,6 +485,9 @@ TypeBoolToken
 TypeAnyToken
   = "Any" !IdentRest
 
+SubModuleToken
+  = "SubModule" !IdentRest
+
 /* Identifier */
 Ident "identifier"
   = !KeyWord name:IdentName _ {
@@ -455,7 +509,7 @@ IdentRest
   = [a-z0-9_]i
 
 ValidStringChar
-  = [a-z_0-9_\-\/\^\~\!\@\#\$\%\&\*\(\)\+\{\}\?\,\.\<\>\t\s ]i
+  = [a-z0-9_\-\/\^\~\!\@\#\$\%\&\*\(\)\+\{\}\?\,\.\<\>\t\s ]i
 
 ValidCommentChar
   = all:(.)!NewLine {
