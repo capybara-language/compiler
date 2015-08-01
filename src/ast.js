@@ -96,6 +96,7 @@ Stmt "statement"
   / DeclareStmt
   / ImportStmt
   / DumpStmt
+  / ExportStmt
   / Comment
   / DocComment
 
@@ -152,6 +153,14 @@ DumpStmt
     };
   }
 
+ExportStmt
+  = ExportToken _ x:Ident xs:IdentAppender* _ StmtTerminator {
+    return {
+      type: "ExportStmt",
+      blocks: [x].concat(xs).map(function(m) { return m.name })
+    };
+  }
+
 IdentAppender
   = Appender x:Ident {
     return x;
@@ -169,7 +178,7 @@ DocComment "documentation comment"
   = "(*" source:ValidDocCommentChar* ("*)" / EOF) {
     return {
       type: "DocComment",
-      text: Capybara.type.toString(source)
+      text: Capybara.type.toString(source).trim()
     };
   }
 
@@ -301,7 +310,7 @@ CapybaraBool
   }
 
 Appender
-  = _ "," _
+  = _ ( "," / ";" ) _
 
 /* Tokens */
 KeyWord "reserved word"
@@ -313,6 +322,7 @@ KeyWord "reserved word"
   / MutableToken
   / ImportToken
   / DumpToken
+  / ExportToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -337,6 +347,9 @@ ImportToken
 
 DumpToken
   = "Dump" !IdentRest
+
+ExportToken
+  = "Export" !IdentRest
 
 /* Identifier */
 Ident "identifier"
