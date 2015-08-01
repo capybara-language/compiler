@@ -254,31 +254,29 @@ DeclareBody
   = mut:(MutableToken _)? variable:Ident type:TypeDefinition? _ AsToken _ expr:Expr {
     var isMutable = !!mut,
         userTyped = !!type,
-        kind      = null;
+        kind      = userTyped
+          ? type
+          : [expr.kind];
 
     if (Capybara.declaration.exists(variable.name)) {
       if (Capybara.declaration.isMutable(variable.name)) {
         var expect = Capybara.declaration.get(variable.name).type;
         var receive = expr.kind;
-        
-        Capybara.type.check(expect, receive); 
-        Capybara.declaration.declare(variable.name, expr, true);
+
+        Capybara.type.check(expect, receive);
+        Capybara.declaration.declare(variable.name, expr, true, expect);
       } else {
         throw new SyntaxError("Declaration \"" + variable.name + "\" is " +
         "immutable");
       }
     } else {
-      kind = userTyped
-        ? type
-        : [expr.kind];
-
       Capybara.type.check(kind, expr.kind);
-      Capybara.declaration.declare(variable.name, expr, isMutable, type);
+      Capybara.declaration.declare(variable.name, expr, isMutable, kind);
     }
 
     return {
       type: "Declaration",
-      kind: type,
+      kind: kind,
       key: variable.name,
       value: expr,
       mutable: isMutable
