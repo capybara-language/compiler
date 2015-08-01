@@ -48,7 +48,7 @@
         return chars.join("").toString();
       },
       check: function(expect, receive) {
-        if (expect.indexOf(receive) !== -1) {
+        if (expect.indexOf(receive) !== -1 || expect.indexOf("Any") !== -1) {
           return;
         }
 
@@ -251,14 +251,24 @@ SubModuleValidNameRest
   }
 
 DeclareBody
-  = mut:(MutableToken _)? variable:Ident type:TypeDefinition? _ AsToken _ expr:Expr {
+  = mut:(MutableToken _)? variable:Ident type:TypeDefinition? expr:DeclareExpr? {
     var isMutable = !!mut,
         userTyped = !!type,
+        hasExpr   = !!expr,
         kind      = userTyped
           ? type
-          : [expr.kind];
+          : hasExpr ? [expr.kind] : ["Any"];
 
     if (Capybara.declaration.exists(variable.name)) {
+      if (!hasExpr) {
+        throw new SyntaxError("Cannot redeclare \"" + variable.name + "\".");
+      }
+
+      if (userTyped) {
+        throw new SyntaxError("Cannot redefined type of \"" + variable.name +
+          "\"");
+      }
+
       if (Capybara.declaration.isMutable(variable.name)) {
         var expect = Capybara.declaration.get(variable.name).type;
         var receive = expr.kind;
@@ -267,10 +277,12 @@ DeclareBody
         Capybara.declaration.declare(variable.name, expr, true, expect);
       } else {
         throw new SyntaxError("Declaration \"" + variable.name + "\" is " +
-        "immutable");
+        "immutable.");
       }
     } else {
-      Capybara.type.check(kind, expr.kind);
+      if (hasExpr) {
+        Capybara.type.check(kind, hasExpr ? expr.kind : "Java");
+      }
       Capybara.declaration.declare(variable.name, expr, isMutable, kind);
     }
 
@@ -281,6 +293,11 @@ DeclareBody
       value: expr,
       mutable: isMutable
     };
+  }
+
+DeclareExpr
+  = _ AsToken _ expr:Expr {
+    return expr;
   }
 
 DeclareRest
@@ -353,6 +370,9 @@ NativeType
   / TypeBoolToken {
     return "Bool";
   }
+  / TypeAnyToken {
+    return "Any";
+  }
 
 UnionTypes
   = _ "|" _ t:NativeType {
@@ -373,6 +393,7 @@ KeyWord "reserved word"
   / TypeStringToken
   / TypeIntegerToken
   / TypeBoolToken
+  / TypeAnyToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -409,6 +430,9 @@ TypeIntegerToken
 
 TypeBoolToken
   = "Bool" !IdentRest
+
+TypeAnyToken
+  = "Any" !IdentRest
 
 /* Identifier */
 Ident "identifier"
