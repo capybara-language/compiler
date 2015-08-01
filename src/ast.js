@@ -6,10 +6,11 @@
    */
   var Capybara = {
     declaration: {
-      declare: function(key, value, mutable) {
+      declare: function(key, value, mutable, type) {
         Persistent.declarations[key] = {
           value: value,
-          mutable: mutable
+          mutable: mutable,
+          type: type
         };
       },
       undeclare: function(key) {
@@ -20,6 +21,12 @@
       },
       isMutable: function(key) {
         return Persistent.declarations[key].mutable ===  true;
+      },
+      getType: function(key) {
+        return Persistent.declarations[key].kind;
+      },
+      get: function(key) {
+        return Persistent.declarations[key].value;
       }
     },
     importation: {
@@ -39,6 +46,14 @@
       },
       toString: function(chars) {
         return chars.join("").toString();
+      },
+      check: function(expect, receive) {
+        if (expect === receive) {
+          return;
+        }
+
+        throw new SyntaxError("Type [" + receive + "] is not assignable to " +
+          " declaration of type [" + expect + "].");
       }
     },
     list: {
@@ -236,22 +251,34 @@ SubModuleValidNameRest
   }
 
 DeclareBody
-  = mut:(MutableToken _)? variable:Ident _ AsToken _ expr:Expr {
-    var isMutable = !!mut;
+  = mut:(MutableToken _)? variable:Ident type:TypeDefinition? _ AsToken _ expr:Expr {
+    var isMutable = !!mut,
+        userTyped = !!type,
+        kind      = null;
 
     if (Capybara.declaration.exists(variable.name)) {
       if (Capybara.declaration.isMutable(variable.name)) {
+        var expect = Capybara.declaration.get(variable.name).kind;
+        var receive = expr.kind;
+        
+        Capybara.type.check(expect, receive);
         Capybara.declaration.declare(variable.name, expr, true);
       } else {
         throw new SyntaxError("Declaration \"" + variable.name + "\" is " +
         "immutable");
       }
     } else {
-      Capybara.declaration.declare(variable.name, expr, isMutable);
+      kind = userTyped
+        ? type
+        : expr.kind;
+
+      Capybara.type.check(kind, expr.kind);
+      Capybara.declaration.declare(variable.name, expr, isMutable, type);
     }
 
     return {
       type: "Declaration",
+      kind: type,
       key: variable.name,
       value: expr,
       mutable: isMutable
@@ -312,6 +339,23 @@ CapybaraBool
 Appender
   = _ ( "," / ";" ) _
 
+/* Native type system */
+TypeDefinition
+  = _ "::" _ t:NativeType {
+    return t;
+  }
+
+NativeType
+  = TypeStringToken {
+    return "String";
+  }
+  / TypeIntegerToken {
+    return "Integer";
+  }
+  / TypeBoolToken {
+    return "Bool";
+  }
+
 /* Tokens */
 KeyWord "reserved word"
   = ModuleToken
@@ -323,6 +367,9 @@ KeyWord "reserved word"
   / ImportToken
   / DumpToken
   / ExportToken
+  / TypeStringToken
+  / TypeIntegerToken
+  / TypeBoolToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -350,6 +397,15 @@ DumpToken
 
 ExportToken
   = "Export" !IdentRest
+
+TypeStringToken
+  = "String" !IdentRest
+
+TypeIntegerToken
+  = "Integer" !IdentRest
+
+TypeBoolToken
+  = "Bool" !IdentRest
 
 /* Identifier */
 Ident "identifier"
