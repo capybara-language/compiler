@@ -26,7 +26,7 @@
         return Persistent.declarations[key].kind;
       },
       get: function(key) {
-        return Persistent.declarations[key].value;
+        return Persistent.declarations[key];
       }
     },
     importation: {
@@ -48,7 +48,7 @@
         return chars.join("").toString();
       },
       check: function(expect, receive) {
-        if (expect === receive) {
+        if (expect.indexOf(receive) !== -1) {
           return;
         }
 
@@ -258,10 +258,10 @@ DeclareBody
 
     if (Capybara.declaration.exists(variable.name)) {
       if (Capybara.declaration.isMutable(variable.name)) {
-        var expect = Capybara.declaration.get(variable.name).kind;
+        var expect = Capybara.declaration.get(variable.name).type;
         var receive = expr.kind;
         
-        Capybara.type.check(expect, receive);
+        Capybara.type.check(expect, receive); 
         Capybara.declaration.declare(variable.name, expr, true);
       } else {
         throw new SyntaxError("Declaration \"" + variable.name + "\" is " +
@@ -270,7 +270,7 @@ DeclareBody
     } else {
       kind = userTyped
         ? type
-        : expr.kind;
+        : [expr.kind];
 
       Capybara.type.check(kind, expr.kind);
       Capybara.declaration.declare(variable.name, expr, isMutable, type);
@@ -341,8 +341,8 @@ Appender
 
 /* Native type system */
 TypeDefinition
-  = _ "::" _ t:NativeType {
-    return t;
+  = _ "::" _ primary:NativeType union:UnionTypes* {
+    return [primary].concat(union);
   }
 
 NativeType
@@ -354,6 +354,11 @@ NativeType
   }
   / TypeBoolToken {
     return "Bool";
+  }
+
+UnionTypes
+  = _ "|" _ t:NativeType {
+    return t;
   }
 
 /* Tokens */
