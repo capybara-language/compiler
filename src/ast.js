@@ -512,7 +512,7 @@ ValidStringChar
   = [a-z0-9_\-\/\^\~\!\@\#\$\%\&\*\(\)\+\{\}\?\,\.\<\>\t\s ]i
 
 ValidCommentChar
-  = all:(.)!NewLine {
+  = !NewLine all:(.) {
     return all;
   }
 
