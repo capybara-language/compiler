@@ -248,10 +248,38 @@ DependentPrimitiveType
   }
 
 DependentInteger
-  = TypeIntegerToken
+  = TypeIntegerToken range:IntegerRange? {
+    return {
+      type: "DependentPrimitiveType",
+      kind: "Integer",
+      range: range
+    };
+  }
 
 DependentString
-  = TypeStringToken
+  = TypeStringToken range:StringRange? {
+    return {
+      type: "DependentPrimitiveType",
+      kind: "String",
+      range: range
+    };
+  }
+
+IntegerRange
+  = _ "[" _ from:CapybaraInteger _ RangeToken _ to:CapybaraInteger _ "]" {
+    return {
+      type: "IntegerRange",
+      range: [from.value, to.value]
+    };
+  }
+
+StringRange
+  = _ "[" _ from:CapybaraInteger _ RangeToken _ to:CapybaraInteger _ "]" {
+    return {
+      type: "StringRange",
+      range: [from.value, to.value]
+    };
+  }
 
 DependentUnionTypes
   = _ "|" _ t:DependentPrimitiveType {
@@ -551,6 +579,9 @@ TypeDefinitionToken
 
 SubTypeDefinitionToken
   = ":"
+
+RangeToken
+  = ".."
 
 /* Identifier */
 Ident "identifier"
