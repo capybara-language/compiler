@@ -240,7 +240,7 @@ Comment "comment"
   }
 
 DocComment "documentation comment"
-  = "(*" source:ValidDocCommentChar* ("*)" / EOF) {
+  = "(*" source:ValidDocCommentChar* (("*)" _) / EOF) {
     return {
       type: "DocComment",
       text: Capybara.type.toString(source).trim()
