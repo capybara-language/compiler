@@ -210,7 +210,7 @@ TranslatesTo
 /* ZPL bindings */
 
 ZPLInstruction
-  = signal:("~" / "^") x:ZPLValidStart xs:ZPLValidRest  {
+  = signal:("~" / "^") x:ZPLValidStart xs:ZPLValidRest*  {
     return {
       type: "ZPLInstruction",
       signal: signal,
@@ -220,9 +220,16 @@ ZPLInstruction
 
 ZPLValidStart
   = [a-zA-Z]
+  / Placeholder
 
 ZPLValidRest
-  = [a-zA-Z0-9_]*
+  = [a-zA-Z0-9_]
+  / Placeholder
+
+Placeholder
+  = "{" i:Ident "}" {
+  	return "{PLACEHOLDER:[" + i.name + "]}";
+  }
 
 // TODO: Allow placeholders in ZPL declarations: ^AD{B}{X}{Y}.
 
