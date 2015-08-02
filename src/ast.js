@@ -187,10 +187,11 @@ SubModuleStmt
   }
 
 SubModuleDecl
-  = name:Ident translation:TranslatesTo {
+  = name:Ident typeDef:SubModuleTypeDef? translation:TranslatesTo {
     return {
       using: name.name,
-      translation: translation
+      translation: translation,
+      typeDef: typeDef
     };
   }
 
@@ -205,6 +206,56 @@ TranslatesTo
       type: "TranslatesDecl",
       instruction: instruction
     };
+  }
+
+SubModuleTypeDef
+  = _ TypeDefinitionToken _ "[" _ x:SubModuleParam xs:SubModuleRestParam* _ "]" _ {
+    return {
+      type: "SubModuleTypeDef",
+      param: [x].concat(xs)
+    };
+  }
+
+SubModuleParam
+  = name:Ident _ SubTypeDefinitionToken _ kind:DependentPrimitiveType union:DependentUnionTypes* {
+    return {
+      type: "SubModuleParam",
+      name: name,
+      kind: [kind].concat(union)
+    };
+  }
+
+SubModuleRestParam
+  = Appender param:SubModuleParam {
+    return param;
+  }
+
+/* Dependent type system for submodules */
+DependentPrimitiveType
+  = DependentInteger
+  / DependentString
+  / TypeBoolToken {
+    return {
+      type: "DependentPrimitiveType",
+      kind: "Bool"
+    };
+  }
+  / TypeAnyToken {
+    return {
+      type: "DependentPrimitiveType",
+      kind: "Any"
+    };
+  }
+
+DependentInteger
+  = TypeIntegerToken
+
+DependentString
+  = TypeStringToken
+
+DependentUnionTypes
+  = _ "|" _ t:DependentPrimitiveType {
+    return t;
   }
 
 /* ZPL bindings */
@@ -228,7 +279,7 @@ ZPLValidRest
 
 Placeholder
   = "{" i:Ident "}" {
-  	return "{PLACEHOLDER:[" + i.name + "]}";
+    return "{PLACEHOLDER:[" + i.name + "]}";
   }
 
 // TODO: Allow placeholders in ZPL declarations: ^AD{B}{X}{Y}.
@@ -411,13 +462,13 @@ CapybaraBool
 Appender
   = _ ( "," / ";" ) _
 
-/* Native type system */
+/* Primitive type system */
 TypeDefinition
-  = _ "::" _ primary:NativeType union:UnionTypes* {
+  = _ TypeDefinitionToken _ primary:PrimitiveType union:UnionTypes* {
     return [primary].concat(union);
   }
 
-NativeType
+PrimitiveType
   = TypeStringToken {
     return "String";
   }
@@ -432,7 +483,7 @@ NativeType
   }
 
 UnionTypes
-  = _ "|" _ t:NativeType {
+  = _ "|" _ t:PrimitiveType {
     return t;
   }
 
@@ -494,6 +545,12 @@ TypeAnyToken
 
 SubModuleToken
   = "SubModule" !IdentRest
+
+TypeDefinitionToken
+  = "::"
+
+SubTypeDefinitionToken
+  = ":"
 
 /* Identifier */
 Ident "identifier"
