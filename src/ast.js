@@ -113,6 +113,7 @@ Stmt "statement"
   / DumpStmt
   / ExportStmt
   / SubModuleStmt
+  / BlockStmt
   / Comment
   / DocComment
 
@@ -186,9 +187,67 @@ SubModuleStmt
     };
   }
 
+BlockStmt
+  = exp:ExportToken? _ BlockToken _ name:Ident typeDef:SubModuleTypeDef?
+    x:BlockInnerStmt xs:BlockInnerStmtRest*_ StmtTerminator {
+    return {
+      type: "BlockStmt",
+      name: name.name,
+      typeDef: typeDef,
+      body: [x].concat(xs),
+      exportByDefault: !!exp
+    };
+  }
+
+BlockInnerStmt
+  = BlockInclusion
+  / InstructionInvoke
+
+BlockInclusion
+  = "@" blockName:Ident call:ParameterizedCall? {
+    return {
+      type: "BlockInclusion",
+      block: blockName.name,
+      parameters: call
+    };
+  }
+
+InstructionInvoke
+  = submodule:Ident "#" instruction:Ident call:ParameterizedCall? {
+    return {
+      type: "InstructionInvoke",
+      submodule: submodule.name,
+      instruction: instruction.name,
+      parameters: call
+    };
+  }
+
+ParameterizedCall
+  = _ "[" _ x:Parameter xs:ParameterAppender* _ "]" _ {
+    return {
+      type: "ParameterizedCall",
+      parameters: [x].concat(xs)
+    };
+  }
+
+Parameter
+  = Literal
+  / Ident
+
+ParameterAppender
+  = Appender x:Parameter {
+    return x;
+  }
+
+BlockInnerStmtRest
+  = Appender x:BlockInnerStmt {
+    return x;
+  }
+
 SubModuleDecl
   = name:Ident typeDef:SubModuleTypeDef? translation:TranslatesTo {
     return {
+      type: "SubModule",
       using: name.name,
       translation: translation,
       typeDef: typeDef
@@ -220,7 +279,7 @@ SubModuleParam
   = name:Ident _ SubTypeDefinitionToken _ kind:DependentPrimitiveType union:DependentUnionTypes* {
     return {
       type: "SubModuleParam",
-      name: name,
+      name: name.name,
       kind: [kind].concat(union)
     };
   }
@@ -531,6 +590,7 @@ KeyWord "reserved word"
   / TypeBoolToken
   / TypeAnyToken
   / SubModuleToken
+  / BlockToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -573,6 +633,9 @@ TypeAnyToken
 
 SubModuleToken
   = "SubModule" !IdentRest
+
+BlockToken
+  = "Block" !IdentRest
 
 TypeDefinitionToken
   = "::"
