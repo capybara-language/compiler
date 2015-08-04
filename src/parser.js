@@ -202,6 +202,7 @@ BlockStmt
 BlockInnerStmt
   = BlockInclusion
   / InstructionInvoke
+  / WhenConditional
 
 BlockInclusion
   = "@" blockName:Ident call:ParameterizedCall? {
@@ -221,6 +222,19 @@ InstructionInvoke
       parameters: call
     };
   }
+
+WhenConditional
+  = WhenToken _ c:Condition _ DoToken _ x:BlockInnerStmt? xs:BlockInnerStmtRest* StopToken {
+    return {
+      type: "WhenConditional",
+      condition: c,
+      body: x ? [x].concat(xs) : []
+    };
+  }
+
+Condition
+  = CapybaraBool
+  / Ident
 
 ParameterizedCall
   = _ "[" _ x:Parameter xs:ParameterAppender* _ "]" _ {
@@ -591,6 +605,10 @@ KeyWord "reserved word"
   / TypeAnyToken
   / SubModuleToken
   / BlockToken
+  / WhenToken
+  / DoToken
+  / StopToken
+  / NotToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -636,6 +654,18 @@ SubModuleToken
 
 BlockToken
   = "Block" !IdentRest
+
+WhenToken
+  = "When" !IdentRest
+
+DoToken
+  = "Do" !IdentRest
+
+StopToken
+  = "Stop" !IdentRest
+
+NotToken
+  = "Not" !IdentRest
 
 TypeDefinitionToken
   = "::"
