@@ -1,4 +1,4 @@
-Module HelloWorld.
+Module BlockInclusion.
 Import StdPrint { field, font, label }.
 
 Declare text :: String
@@ -6,8 +6,11 @@ Declare text :: String
 
 Export Block main
   label#begin,
+  @content,
+  label#end.
+
+Block content
   field#origin [ 20, 10 ],
   font#sizing  [ 90, 50 ],
   field#data   [ text ],
-  field#sep,
-  label#end.
+  field#sep.

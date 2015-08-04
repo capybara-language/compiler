@@ -1,0 +1,14 @@
+Module Conditional.
+Import StdPrint { field ; font ; label }.
+
+Declare print
+  := Yes.
+
+Block main
+  label#begin,
+  field#origin [ 20, 10 ],
+  font#default,
+  When print Do 
+    field#data [ {:Printed!:} ]
+  Stop,
+  label#end.
