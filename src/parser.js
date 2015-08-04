@@ -476,7 +476,7 @@ DeclareBody
       }
     } else {
       if (hasExpr) {
-        Capybara.type.check(kind, hasExpr ? expr.kind : "Java");
+        Capybara.type.check(kind, expr.kind);
       }
       Capybara.declaration.declare(variable.name, expr, isMutable, kind);
     }
@@ -491,7 +491,7 @@ DeclareBody
   }
 
 DeclareExpr
-  = _ AsToken _ expr:Expr {
+  = _ AssignToken _ expr:Expr {
     return expr;
   }
 
@@ -578,7 +578,7 @@ UnionTypes
 KeyWord "reserved word"
   = ModuleToken
   / DeclareToken
-  / AsToken
+  / AssignToken
   / YesToken
   / NoToken
   / MutableToken
@@ -598,8 +598,8 @@ ModuleToken
 DeclareToken
   = "Declare" !IdentRest
 
-AsToken
-  = "As" !IdentRest
+AssignToken
+  = ":="
 
 YesToken
   = "Yes" !IdentRest
