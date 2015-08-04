@@ -202,6 +202,7 @@ BlockStmt
 BlockInnerStmt
   = BlockInclusion
   / InstructionInvoke
+  / WhenConditional
 
 BlockInclusion
   = "@" blockName:Ident call:ParameterizedCall? {
@@ -221,6 +222,19 @@ InstructionInvoke
       parameters: call
     };
   }
+
+WhenConditional
+  = WhenToken _ c:Condition _ DoToken _ x:BlockInnerStmt? xs:BlockInnerStmtRest* StopToken {
+    return {
+      type: "WhenConditional",
+      condition: c,
+      body: x ? [x].concat(xs) : []
+    };
+  }
+
+Condition
+  = CapybaraBool
+  / Ident
 
 ParameterizedCall
   = _ "[" _ x:Parameter xs:ParameterAppender* _ "]" _ {
@@ -476,7 +490,7 @@ DeclareBody
       }
     } else {
       if (hasExpr) {
-        Capybara.type.check(kind, hasExpr ? expr.kind : "Java");
+        Capybara.type.check(kind, expr.kind);
       }
       Capybara.declaration.declare(variable.name, expr, isMutable, kind);
     }
@@ -491,7 +505,7 @@ DeclareBody
   }
 
 DeclareExpr
-  = _ AsToken _ expr:Expr {
+  = _ AssignToken _ expr:Expr {
     return expr;
   }
 
@@ -578,7 +592,7 @@ UnionTypes
 KeyWord "reserved word"
   = ModuleToken
   / DeclareToken
-  / AsToken
+  / AssignToken
   / YesToken
   / NoToken
   / MutableToken
@@ -591,6 +605,10 @@ KeyWord "reserved word"
   / TypeAnyToken
   / SubModuleToken
   / BlockToken
+  / WhenToken
+  / DoToken
+  / StopToken
+  / NotToken
 
 ModuleToken
   = "Module" !IdentRest
@@ -598,8 +616,8 @@ ModuleToken
 DeclareToken
   = "Declare" !IdentRest
 
-AsToken
-  = "As" !IdentRest
+AssignToken
+  = ":="
 
 YesToken
   = "Yes" !IdentRest
@@ -636,6 +654,18 @@ SubModuleToken
 
 BlockToken
   = "Block" !IdentRest
+
+WhenToken
+  = "When" !IdentRest
+
+DoToken
+  = "Do" !IdentRest
+
+StopToken
+  = "Stop" !IdentRest
+
+NotToken
+  = "Not" !IdentRest
 
 TypeDefinitionToken
   = "::"
