@@ -1,0 +1,42 @@
+(**
+ * Default IO library for Capybara
+ * @package Capybara.Core
+ * @module StdPrint
+ * @author Marcelo Camargo
+ *)
+Module StdPrint.
+Export field,
+       font,
+       label.
+
+SubModule field
+  
+  origin :: [
+    x: Integer [ 0 .. 500 ],
+    y: Integer [ 0 .. 500 ]
+  ] +> ^FO{x}{y},
+  
+  data :: [
+    text: String
+  ] +> ^FD{text},
+
+  sep
+    +> ^FS.
+
+SubModule font
+
+  default
+    +> ^ADN9050,
+
+  sizing :: [
+    m: Integer [ 18 .. 180 ],
+    n: Integer [ 10 .. 100 ]
+  ] +> ^ADN{m}{n}.
+
+SubModule label
+
+  begin
+    +> ^XA,
+
+  end
+    +> ^XZ.
