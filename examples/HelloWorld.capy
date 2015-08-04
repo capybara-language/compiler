@@ -1,21 +1,12 @@
 Module HelloWorld.
-Import StdPrint { label }.
-Export hello.
+Import StdPrint { field, font, label }.
+Declare text :: String
+  := {:Hello World!:}.
 
-Token {? / ?} Is ^FS.
-
-Declare
-  helloText Is {: Hello World! :}.
-
-SubModule label Where begin ~ ^XA, end ~ XZ.
-SubModule field Where
-  origin: [ x: Int [ 18 .. 180 ], y: Int [ 10 .. 100 ] ] ~ ^FO{x}{y}
-  data: [ content: String ] ~ ^FD{content}.
-SubModule font Where default ~ ^ADN9050.
-
-Block hello Where
-  label#begin
-  field#origin [ 100, 150 ]
-  font#default
-  field#data   [ helloText ]; /
+Export Block main
+  label#begin,
+  field#origin [ 20 ; 10 ],
+  font#sizing  [ 90 ; 50 ],
+  field#data   [ text ],
+  field#sep,
   label#end.
