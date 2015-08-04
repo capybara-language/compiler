@@ -1,64 +1,46 @@
 ## Capybara Programming Language
 
-[![Build Status](https://travis-ci.org/haskellcamargo/capybara.svg?branch=master)](https://travis-ci.org/haskellcamargo/capybara)
+**Capybara** is a domain specific language that targets **ZPL**.
+It contains the following features:
 
-Capybara is a metaprogrammable, declarative, statically and dependently typed
-programming language that compiles to ZPL. Capybara is just a rename of Ink programming language.
+- **Extensible** - You can extend the language and its tokens natively. The
+compiler supports special symbols to abstract the domain of your problem.
+- **Primitive Type System** - Capybara has four primitive types: `Any`, `String`,
+`Integer` and `Bool`.
+- **Range Based Type System** - Following **Idris** concepts, **Capybara** has
+integers from 0 to 10, 10 to 20 and your range, with a compile time type check.
+- **Declarative** - Don't say how to do, neither what to do. Say where to do.
+- **Modular** - A simple module system highly organized.
+- **Immutability** - Declarations are immutable unless specified.
 
-### Examples
+### Example
 
-#### Hello World (With imported modules)
+#### Hello World!
 
-```erlang
+```groovy
 Module HelloWorld.
-Import StdPrint { label ; field ; font }
-       StdToken { / }.
-Export hello.
+Import StdPrint { field, font, label }.
 
-% Hello world with the standard IO library!
-Block hello Where
-  label#begin
-  field#origin [ 100, 150 ]
-  font#default
-  field#data [ {: Hello World:} ]; /
+Declare text :: String
+  := {:Hello World!:}.
+
+Export Block main
+  label#begin,
+  field#origin [ 100, 150 ],
+  font#sizing  [ 90,  50  ],
+  field#data   [ text     ],
+  field#sep,
   label#end.
 ```
 
 Generates:
 
 ```php
-^FX Hello world with the standard IO library!
-^XA
-^FO100,150^ADN90,50^FDHello World^FS
-^XZ
+^XA^FO100,150^ADN90,50^FDHello World^FS^XZ
 ```
 
 That outputs:
 
 ![Hello World!](https://raw.githubusercontent.com/haskellcamargo/capybara/master/helloworld.png)
-
-#### Hello World (With manual type definition)
-
-```erlang
-Module HelloWorld.
-
-Token { / } Is ^FS.
-
-Declare
-  helloText Is {: Hello World! :}.
-
-SubModule label Where begin ~ ^XA, end ~ XZ.
-SubModule field Where
-  origin: [ x: Int [ 18 .. 180 ], y: Int [ 10 .. 100 ] ] ~ ^FO{x}{y}
-  data: [ content: String ] ~ ^FD{content}.
-SubModule font Where default ~ ^ADN9050.
-
-Block hello Where
-  label#begin
-  field#origin [ 100, 150 ]
-  font#default
-  field#data   [ helloText ]; /
-  label#end.
-```
 
 You can try the generated ZPL code here: (Labelary Online ZPL Viewer)[http://labelary.com/viewer.html].
