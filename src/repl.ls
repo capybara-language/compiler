@@ -1,3 +1,7 @@
+/**
+ * Licensed under GNU GPL v3.
+ * @author Marcelo Camargo
+ */
 require! {
   readline
   colors
@@ -33,7 +37,13 @@ rl.on \line (line) ->
   if not-empty line
     if is-internal-command line
       switch line.slice 1
-      | \clear => console.log "LIMPO"
+      | \clear =>
+        let lines = process.stdout.get-window-size!1
+          for i from 0 to lines
+            console.log "\r\n"
+      | \quit =>
+        process.exit!
     else
-      console.log line
+      # TODO: Output from Capybara parser
+      console.log eval line
   reset-prompt rl
